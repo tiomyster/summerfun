@@ -1,0 +1,72 @@
+<style type="text/css">
+#textarea {
+  width: 100%;
+  height: 400px;
+}
+</style>
+<script type="text/javascript" src="http://code.jquery.com/jquery-2.1.1.min.js"></script>
+<script type="text/javascript">
+
+function convertFromJson(rawData) {
+  try {
+    return JSON.parse(rawData);
+  } catch (error) {
+    console.error("JSON error");
+    return "";
+  }
+}
+
+function parse(data, companyName) {
+  var results = [];
+  for (var i=0; i < data.connections.length; i++) {
+    var connection = data.connections[i];
+    if (connection.location && connection.location.country && connection.location.country.code === 'ca') {
+      
+      var positions = connection.positions;
+      if (positions.values) {
+        for (var j=0; j < positions.values.length; j++) {
+          var value = positions.values[j];
+          var company = value.company;
+          
+          if (company && company.name && company.name.toLowerCase().indexOf(companyName) >= 0) {
+            console.log(connection);
+            results.push(connection.formattedName);
+            break;
+          }
+        }
+      }
+    }
+  }
+  return results;
+}
+
+$(function () {
+
+  $("#form").on('submit', function (e) {
+    $('#orderedList').html(''); //clear the list
+
+    e.preventDefault();
+    var val = $("textarea").val();
+    var converted = convertFromJson(val);
+    var companyName = $("#companyName").val().toLowerCase();
+
+    var results = parse(converted, companyName);
+    for (var i=0; i<results.length; i++) {
+      result = results[i];
+      $('#orderedList').append($('<li>'+result+'</li>'));
+    }
+  });
+
+});
+
+</script>
+
+<form id="form">
+<label>Company Name: <input type="text" placeholder="Company name" id="companyName" /></label>
+<br>
+<textarea id="textarea" placeholder="Insert JSON here">
+</textarea>
+<input type="submit" value="YEEEHA" />
+</form>
+<div id="results"></div>
+<ol id="orderedList"></ol>
